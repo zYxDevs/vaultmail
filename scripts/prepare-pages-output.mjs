@@ -21,8 +21,8 @@ const prepareFromOpenNext = async (targetDir) => {
   await rm(targetDir, { recursive: true, force: true });
   await mkdir(targetDir, { recursive: true });
 
-  await cp(OPEN_NEXT_DIR, targetDir, { recursive: true });
-  await cp(OPEN_NEXT_ASSETS, targetDir, { recursive: true });
+  await cp(OPEN_NEXT_DIR, targetDir, { recursive: true, dereference: true });
+  await cp(OPEN_NEXT_ASSETS, targetDir, { recursive: true, dereference: true });
   await cp(OPEN_NEXT_WORKER, path.join(targetDir, '_worker.js'));
 };
 
@@ -33,10 +33,14 @@ const prepareFromNextOnPages = async (targetDir) => {
 
   await rm(targetDir, { recursive: true, force: true });
   await mkdir(targetDir, { recursive: true });
-  await cp(NOP_STATIC_DIR, targetDir, { recursive: true });
+  await cp(NOP_STATIC_DIR, targetDir, { recursive: true, dereference: true });
 };
 
 const main = async () => {
+  if (process.env.SKIP_POSTBUILD_PREPARE === '1') {
+    console.log('Skipped Pages output preparation: SKIP_POSTBUILD_PREPARE=1');
+    return;
+  }
   const hasOpenNext = await exists(OPEN_NEXT_WORKER);
   const hasNextOnPages = await exists(NOP_STATIC_DIR);
 

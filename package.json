@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "cf:build": "opennextjs-cloudflare build",
-    "cf:preview": "opennextjs-cloudflare build && wrangler dev --config wrangler.worker.toml",
-    "cf:deploy": "opennextjs-cloudflare build && wrangler deploy --config wrangler.worker.toml",
-    "cf:pages:build": "opennextjs-cloudflare build && node scripts/prepare-pages-output.mjs",
+    "cf:build": "SKIP_POSTBUILD_PREPARE=1 opennextjs-cloudflare build",
+    "cf:preview": "SKIP_POSTBUILD_PREPARE=1 opennextjs-cloudflare build && node scripts/prepare-pages-output.mjs && wrangler dev --config wrangler.worker.toml",
+    "cf:deploy": "SKIP_POSTBUILD_PREPARE=1 opennextjs-cloudflare build && node scripts/prepare-pages-output.mjs && wrangler deploy --config wrangler.worker.toml",
+    "cf:pages:build": "SKIP_POSTBUILD_PREPARE=1 opennextjs-cloudflare build && node scripts/prepare-pages-output.mjs",
     "postbuild": "node scripts/prepare-pages-output.mjs"
   },
   "dependencies": {
