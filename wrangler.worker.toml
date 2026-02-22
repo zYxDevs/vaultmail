@@ -1,4 +1,8 @@
 name = "vaultmail"
-pages_build_output_dir = ".cf-pages"
+main = ".open-next/worker.js"
 compatibility_date = "2026-02-22"
 compatibility_flags = ["nodejs_compat"]
+
+[assets]
+binding = "ASSETS"
+directory = ".open-next/assets"

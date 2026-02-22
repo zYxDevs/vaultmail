@@ -42,11 +42,28 @@ This repo now includes **OpenNext for Cloudflare**, which is the supported path 
    ```bash
    npm run cf:build
    ```
-3. Login and deploy:
+3. Login and deploy to **Cloudflare Workers**:
    ```bash
    npx wrangler login
    npm run cf:deploy
    ```
+
+### Cloudflare Pages deployment (important)
+
+If your Cloudflare Pages project is still using the legacy build command:
+
+```bash
+npx @cloudflare/next-on-pages@1
+```
+
+please replace it. That path is deprecated for Next.js 16 and can exceed Pages Functions size limits.
+
+Use this instead:
+
+- **Build command**: `npm run cf:pages:build`
+- **Build output directory**: `.cf-pages`
+
+This repo now prepares `.cf-pages/_worker.js` from the OpenNext build output so Pages can upload a single worker entrypoint with static assets.
 
 Required Cloudflare Worker environment variables:
 
@@ -58,6 +75,12 @@ For local Cloudflare runtime testing:
 
 ```bash
 npm run cf:preview
+```
+
+To simulate the Pages build output locally:
+
+```bash
+npm run cf:pages:build
 ```
 
 ### 2. Configure Database (MongoDB)
