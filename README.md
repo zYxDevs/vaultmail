@@ -60,10 +60,14 @@ please replace it. That path is deprecated for Next.js 16 and can exceed Pages F
 
 Use this instead:
 
-- **Build command**: `npm run cf:pages:build`
-- **Build output directory**: `.cf-pages`
+- **Preferred build command**: `npm run cf:pages:build`
+- **Build output directory**: `.vercel/output/static`
 
-This repo now prepares `.cf-pages/_worker.js` from the OpenNext build output so Pages can upload a single worker entrypoint with static assets.
+This repo now prepares `.cf-pages` automatically in a `postbuild` hook, with support for both:
+- OpenNext output (`.open-next`) and
+- legacy `next-on-pages` output (`.vercel/output/static`).
+
+So even if your Pages project is still temporarily set to `npx @cloudflare/next-on-pages@1`, the configured `.vercel/output/static` output directory will exist. We also mirror output to `.cf-pages` for local inspection.
 
 Required Cloudflare Worker environment variables:
 

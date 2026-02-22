@@ -5,31 +5,56 @@ const ROOT = process.cwd();
 const OPEN_NEXT_DIR = path.join(ROOT, '.open-next');
 const OPEN_NEXT_ASSETS = path.join(OPEN_NEXT_DIR, 'assets');
 const OPEN_NEXT_WORKER = path.join(OPEN_NEXT_DIR, 'worker.js');
-const PAGES_OUTPUT = path.join(ROOT, '.cf-pages');
-const PAGES_WORKER = path.join(PAGES_OUTPUT, '_worker.js');
+const NOP_STATIC_DIR = path.join(ROOT, '.vercel', 'output', 'static');
+const ALT_PAGES_OUTPUT = path.join(ROOT, '.cf-pages');
 
-const ensureOpenNextBuildExists = async () => {
-  await stat(OPEN_NEXT_DIR);
-  await stat(OPEN_NEXT_ASSETS);
-  await stat(OPEN_NEXT_WORKER);
+const exists = async (targetPath) => {
+  try {
+    await stat(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const prepareFromOpenNext = async (targetDir) => {
+  await rm(targetDir, { recursive: true, force: true });
+  await mkdir(targetDir, { recursive: true });
+
+  await cp(OPEN_NEXT_DIR, targetDir, { recursive: true });
+  await cp(OPEN_NEXT_ASSETS, targetDir, { recursive: true });
+  await cp(OPEN_NEXT_WORKER, path.join(targetDir, '_worker.js'));
+};
+
+const prepareFromNextOnPages = async (targetDir) => {
+  if (path.resolve(targetDir) === path.resolve(NOP_STATIC_DIR)) {
+    return;
+  }
+
+  await rm(targetDir, { recursive: true, force: true });
+  await mkdir(targetDir, { recursive: true });
+  await cp(NOP_STATIC_DIR, targetDir, { recursive: true });
 };
 
 const main = async () => {
-  await ensureOpenNextBuildExists();
+  const hasOpenNext = await exists(OPEN_NEXT_WORKER);
+  const hasNextOnPages = await exists(NOP_STATIC_DIR);
 
-  await rm(PAGES_OUTPUT, { recursive: true, force: true });
-  await mkdir(PAGES_OUTPUT, { recursive: true });
+  if (hasOpenNext) {
+    await prepareFromOpenNext(NOP_STATIC_DIR);
+    await prepareFromOpenNext(ALT_PAGES_OUTPUT);
+    console.log('Prepared Pages output (source: .open-next) at .vercel/output/static and .cf-pages');
+    return;
+  }
 
-  // Keep the OpenNext runtime module graph available for _worker.js imports.
-  await cp(OPEN_NEXT_DIR, PAGES_OUTPUT, { recursive: true });
+  if (hasNextOnPages) {
+    await prepareFromNextOnPages(NOP_STATIC_DIR);
+    await prepareFromNextOnPages(ALT_PAGES_OUTPUT);
+    console.log('Prepared Pages output (source: .vercel/output/static) and synced .cf-pages');
+    return;
+  }
 
-  // Expose static assets at Pages root where _worker.js/ASSETS will resolve URLs.
-  await cp(OPEN_NEXT_ASSETS, PAGES_OUTPUT, { recursive: true });
-
-  // Pages expects the worker entrypoint to be named _worker.js.
-  await cp(OPEN_NEXT_WORKER, PAGES_WORKER);
-
-  console.log('Prepared Cloudflare Pages output at .cf-pages');
+  console.log('Skipped Pages output preparation: no OpenNext or next-on-pages output found.');
 };
 
 main().catch((error) => {
